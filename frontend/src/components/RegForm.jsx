@@ -15,7 +15,6 @@ const RegistrationForm = () => {
             [name]: value,
         }));
     };
-    console.log(import.meta.env.VITE_URI);
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
