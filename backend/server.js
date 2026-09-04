@@ -16,16 +16,23 @@ app.use(
   })
 );
 
-app.use(express.json());
+app.use(express.json())
 
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => {
-    console.log("MongoDB connected");
-  })
-  .catch((error) => {
-    console.error("MongoDB connection error:", error);
-  });
+const connectDB = async () => {
+  if (mongoose.connection.readyState === 1) {
+    return;
+  }
+
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
+
+    console.log("MongoDB connected successfully");
+  } catch (error) {
+    console.error("MongoDB connection failed:", error);
+    throw error;
+  }
+};
+
 
 
 app.get("/", (req, res) => {
@@ -37,6 +44,8 @@ app.get("/", (req, res) => {
 
 app.post("/api/register", async (req, res) => {
   try {
+    await connectDB();
+
     const { name, email, contact } = req.body;
 
     if (!name || !email || !contact) {
@@ -46,22 +55,26 @@ app.post("/api/register", async (req, res) => {
       });
     }
 
+    const cleanName = name.trim();
+    const cleanEmail = email.toLowerCase().trim();
+    const cleanContact = contact.trim();
+
     const existingRegistration = await Registration.findOne({
       $or: [
-        { email: email.toLowerCase().trim() },
-        { contact: contact.trim() },
+        { email: cleanEmail },
+        { contact: cleanContact },
       ],
     });
 
     if (existingRegistration) {
-      if (existingRegistration.email === email.toLowerCase().trim()) {
+      if (existingRegistration.email === cleanEmail) {
         return res.status(409).json({
           success: false,
           message: "Registration is already done with this email.",
         });
       }
 
-      if (existingRegistration.contact === contact.trim()) {
+      if (existingRegistration.contact === cleanContact) {
         return res.status(409).json({
           success: false,
           message: "Registration is already done with this contact number.",
@@ -70,9 +83,9 @@ app.post("/api/register", async (req, res) => {
     }
 
     const registration = await Registration.create({
-      name: name.trim(),
-      email: email.toLowerCase().trim(),
-      contact: contact.trim(),
+      name: cleanName,
+      email: cleanEmail,
+      contact: cleanContact,
     });
 
     return res.status(201).json({
