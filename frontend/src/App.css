@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: 'cinzelDec';
+  src: url('./assets/fonts/CinzelDecorative-Regular.ttf') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'italiana';
+  src: url('./assets/fonts/Italiana-Regular.ttf') format('woff2');
+  font-weight: 1200;
+  font-style: normal;
+}
+
+
+@theme {
+  --font-cinzelDec: 'cinzelDec', sans-serif;
+  --font-italiana: 'italiana', sans-serif;
+}
