@@ -2,6 +2,7 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
+import nodemailer from "nodemailer";
 
 import Registration from "./models/registration.js";
 
@@ -17,6 +18,8 @@ app.use(
 );
 
 app.use(express.json())
+
+
 
 const connectDB = async () => {
   if (mongoose.connection.readyState === 1) {
@@ -88,6 +91,55 @@ app.post("/api/register", async (req, res) => {
       contact: cleanContact,
     });
 
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    await transporter.sendMail({
+      from: `"Aakriti's Website" <${process.env.EMAIL_USER}>`,
+      to: process.env.ADMIN_EMAIL,
+
+      subject: "New Registration Received",
+
+      html: `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+      
+        <h2>🎉 New Registration</h2>
+
+        <p>A new person has registered on the website.</p>
+
+        <hr>
+
+        <p>
+          <strong>Name:</strong> ${cleanName}
+        </p>
+
+        <p>
+          <strong>Email:</strong> ${cleanEmail}
+        </p>
+
+        <p>
+          <strong>Contact:</strong> ${cleanContact}
+        </p>
+
+        <p>
+          <strong>Registration ID:</strong> ${registration._id}
+        </p>
+
+        <hr>
+
+        <p>
+          This registration was submitted from the website.
+        </p>
+
+      </div>
+      `,
+    });
+
     return res.status(201).json({
       success: true,
       message: "Registration successful!",
@@ -110,5 +162,9 @@ app.post("/api/register", async (req, res) => {
     });
   }
 });
+
+// app.listen(PORT, () => {
+//   console.log(`Server is running on port ${PORT}`);
+// });
 
 export default app;
